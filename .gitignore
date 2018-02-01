@@ -2,3 +2,5 @@ venv/
 secrets/*
 
 !secrets/.keep
+
+*.*.swp

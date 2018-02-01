@@ -11,21 +11,68 @@
 import argparse
 import collections
 import csv
+import re
 import sys
 
 def subset_census_row(row_items):
     """
     Select a subset of the items in a row and return this subset as a list.
     Keep the same relative ordering in the subset. In this case, this function
-    returns the country name, city name, and population in that order.
+    returns the country name, city name, and population in that order. Also
+    apply a transform to this data's city and country name.
 
     Args:
     row_items: The items in the census row.
 
     Returns:
-    A new row consisting of [country_name, city_name, population]
+    A new row consisting of [country_name, city_name, population]. Some values
+    are transformed.
     """
     return (row_items[0], row_items[4], row_items[9])
+
+def transform_city_name(city):
+    """
+    Transform a city name into a different more friendly format.
+
+    Args:
+    city: The city name.
+
+    Returns:
+    The transformed city name.
+    """
+    # Fix capitalization, remove parentheticals and remove duplicate whitespace.
+    cased = city.title()
+    transform = re.sub(r'\(.+\)', '', cased)
+    transform = re.sub(r'\s\s+', '', transform)
+    transform = transform.strip()
+
+    return transform
+
+
+def transform_country_name(country):
+    """
+    Transform a country name into a more friendly format.
+
+    Args:
+    country: The country format.
+
+    Returns:
+    The transformed country name.
+    """
+    country_maps = {
+        'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+        'Russian Federation': 'Russia',
+        'China, Hong Kong SAR': 'Hong Kong',
+        'United Republic of Tanzania': 'Tanzania',
+        'Czechia': 'Czech Republic'
+    }
+
+    cased = country.title()
+    transform = re.sub(r'\(.+\)', '', cased)
+    transform = re.sub(r'\s\s+', '', transform)
+    transform = transform.strip()
+
+    return transform
 
 parser = argparse.ArgumentParser()
 parser.add_argument('un_data_fn', help='The raw UN census data filename.')
@@ -41,7 +88,9 @@ with open(args.un_data_fn, 'r') as un_data:
     next(un_data_reader)
 
     for row in un_data_reader:
-        transformed = subset_census_row(row)
+        subset = subset_census_row(row)
+        transformed = (transform_country_name(subset[0]),
+                       transform_city_name(subset[1]), subset[2])
         k = transformed[:2]
         # This removes the half people that exist in the world.
         pop = int(float(transformed[2]))
