@@ -40,11 +40,21 @@ def transform_city_name(city):
     Returns:
     The transformed city name.
     """
+    city_maps = {
+        'new york': 'new york city'
+    }
+
     # Fix capitalization, remove parentheticals and remove duplicate whitespace.
-    cased = city.title()
-    transform = re.sub(r'\(.+\)', '', cased)
+    transform = re.sub(r'\(.+\)', '', city)
     transform = re.sub(r'\s\s+', '', transform)
     transform = transform.strip()
+
+    try:
+        transform = city_maps[transform.lower()]
+    except KeyError:
+        pass
+
+    transform = transform.title()
 
     return transform
 
@@ -60,17 +70,24 @@ def transform_country_name(country):
     The transformed country name.
     """
     country_maps = {
-        'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-        'Russian Federation': 'Russia',
-        'China, Hong Kong SAR': 'Hong Kong',
-        'United Republic of Tanzania': 'Tanzania',
-        'Czechia': 'Czech Republic'
+        'united kingdom of great britain and northern ireland': 'united kingdom',
+        'russian federation': 'russia',
+        'china, hong kong sar': 'hong kong',
+        'united republic of tanzania': 'tanzania',
+        'czechia': 'czech republic'
     }
 
-    cased = country.title()
-    transform = re.sub(r'\(.+\)', '', cased)
+
+    transform = re.sub(r'\(.+\)', '', country)
     transform = re.sub(r'\s\s+', '', transform)
     transform = transform.strip()
+
+    try:
+        transform = country_maps[transform.lower()]
+    except KeyError:
+        pass
+
+    transform = transform.title()
 
     return transform
 
