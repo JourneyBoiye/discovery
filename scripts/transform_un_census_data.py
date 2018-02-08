@@ -41,7 +41,13 @@ def transform_city_name(city):
     The transformed city name.
     """
     city_maps = {
-        'new york': 'new york city'
+        'new york': 'new york city',
+        'mexico, ciudad de': 'mexico city',
+        'delhi municipal corporation': 'delhi',
+        'bogotá': 'bogota',
+        'greater hyderabad municipal corporation': 'hyderabad',
+        'hong kong sar': 'hong kong',
+        'moskva': 'moscow'
     }
 
     # Fix capitalization, remove parentheticals and remove duplicate whitespace.

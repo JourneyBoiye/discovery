@@ -9,7 +9,12 @@ import argparse
 import json
 import os
 
-from watson_developer_cloud import DiscoveryV1
+from watson_developer_cloud import DiscoveryV1, WatsonException
+from retry import retry
+
+@retry(exceptions=WatsonException, delay=1, backoff=1.2, max_delay=10)
+def upload_article(discovery, env_id, coll_id, f):
+    discovery.add_document(env_id, coll_id, file_info=f)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('disc_config', help='The Discovery configuration file.')
@@ -33,7 +38,8 @@ env_id = collection_config['environment_id']
 coll_id = collection_config['collection_id']
 
 for filename in os.listdir(args.pages_dir):
+    print(filename)
     full_path = os.path.join(args.pages_dir, filename)
 
     with open(full_path, 'r') as f:
-        discovery.add_document(env_id, coll_id, file_info=f)
+        upload_article(discovery, env_id, coll_id, f)
