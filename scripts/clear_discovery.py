@@ -28,5 +28,11 @@ discovery = DiscoveryV1(username=discovery_config['username'],
 env_id = wv_config['environment_id']
 coll_id = wv_config['collection_id']
 
-discovery.delete_collection(env_id, coll_id)
-discovery.delete_environment(env_id)
+qopts = {
+    'query': '*.*'
+}
+resp = discovery.query(env_id, coll_id, qopts)
+
+for result in resp['results']:
+    doc_id = result['id']
+    discovery.delete_document(env_id, coll_id, doc_id)
