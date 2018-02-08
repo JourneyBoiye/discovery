@@ -45,7 +45,7 @@ for filename in os.listdir(args.wv_pages_dir):
         ed = editdistance.eval(city, article_title)
 
         # This is a close match. So write it to the output directory.
-        if ed < 2:
+        if ed < 1:
             print(article_title)
 
             source_article_path = os.path.join(args.wv_pages_dir, filename)
