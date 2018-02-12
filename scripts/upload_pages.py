@@ -12,6 +12,8 @@ import os
 from watson_developer_cloud import DiscoveryV1, WatsonException
 from retry import retry
 
+import logging
+
 @retry(exceptions=WatsonException, delay=1, backoff=1.2, max_delay=10)
 def upload_article(discovery, env_id, coll_id, f):
     discovery.add_document(env_id, coll_id, file_info=f)
@@ -23,6 +25,8 @@ parser.add_argument('coll_config',
 parser.add_argument('pages_dir',
                     help='The directory where the wikivoyage pages are.')
 args = parser.parse_args()
+
+logging.basicConfig()
 
 with open(args.disc_config, 'r') as f:
     discovery_config = json.load(f)
