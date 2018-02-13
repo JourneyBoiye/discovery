@@ -29,7 +29,8 @@ env_id = wv_config['environment_id']
 coll_id = wv_config['collection_id']
 
 qopts = {
-    'query': '*.*'
+    'query': '*.*',
+    'count': 3000
 }
 resp = discovery.query(env_id, coll_id, qopts)
 

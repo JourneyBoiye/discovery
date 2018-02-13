@@ -8,6 +8,7 @@
 #
 
 import argparse
+import collections
 import json
 import os
 import re
@@ -30,13 +31,16 @@ def save_page(page):
            'disambiguation' not in title and \
            'module:' not in title and \
            'category:' not in title and \
-           'disambiguation banner' not in text
+           'disambiguation banner' not in text[:200]
 
-def transform_text(text):
-    tmp1 = re.sub(r'\[\[(.+?)\]\]', '\\1', text)
-    tmp2 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp1)
-    tmp3 = re.sub(r'\'{2,}', '', tmp2)
-    return tmp3
+def transformed_page_text(text):
+    tmp1 = re.sub(r'\{\{(pagebanner|departures)|(.+?)\}\}', '', text)
+    tmp2 = re.sub(r'\[\[(File|Image)(.+?)\]\]', '', tmp1)
+    tmp3 = re.sub(r'\[\[(.*?)\|?([^\[\]]+)\]\]', '\\2', tmp2)
+    tmp4 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp3)
+    tmp5 = re.sub(r'\'{2,}', '', tmp4)
+
+    return tmp5
 
 def create_page_from_page_node(node):
     page = {}
@@ -44,9 +48,9 @@ def create_page_from_page_node(node):
     raw_text = page_node.find(namespaced_tag('revision')).find(namespaced_tag('text')).text
     if raw_text is None:
         raw_text = ''
-    page['text'] = transform_text(raw_text)
+    page['text'] = raw_text
 
-    return page;
+    return page
 
 
 parser = argparse.ArgumentParser()
@@ -57,12 +61,28 @@ args = parser.parse_args()
 dump = ElementTree.parse(args.dump)
 root = dump.getroot()
 
+aggs = collections.defaultdict(list)
 for page_node in root.iterfind(namespaced_tag('page')):
     page = create_page_from_page_node(page_node)
 
     if save_page(page):
-        print(page['title'])
-        fn = (page['title'] + '.json').replace('/', '-')
-        full_path = os.path.join(args.output_dir, fn)
-        with open(full_path, 'w') as f:
-            json.dump(page, f)
+        splice = page['title'].find('/')
+        if splice < 0:
+            title = page['title']
+        else:
+            title = page['title'][:splice]
+
+        aggs[title].append(transformed_page_text(page['text']))
+
+for title, articles in aggs.items():
+    page = {
+        'title': title,
+        'text': '\n'.join(articles)
+    }
+
+    print(title)
+
+    fn = title + '.json'
+    full_path = os.path.join(args.output_dir, fn)
+    with open(full_path, 'w') as f:
+        json.dump(page, f)
