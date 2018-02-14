@@ -39,8 +39,9 @@ def transformed_page_text(text):
     tmp3 = re.sub(r'\[\[(.*?)\|?([^\[\]]+)\]\]', '\\2', tmp2)
     tmp4 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp3)
     tmp5 = re.sub(r'\'{2,}', '', tmp4)
+    tmp6 = re.sub(r'\[\S+ (\S+)\]', '\\1', tmp5)
 
-    return tmp5
+    return tmp6
 
 def create_page_from_page_node(node):
     page = {}
