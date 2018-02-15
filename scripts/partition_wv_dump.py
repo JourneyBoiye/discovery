@@ -34,12 +34,12 @@ def save_page(page):
            'disambiguation banner' not in text[:200]
 
 def transformed_page_text(text):
-    tmp1 = re.sub(r'\{\{(pagebanner|departures)|(.+?)\}\}', '', text)
+    tmp1 = re.sub(r'\(?\{\{.+?\}\}\)?', '', text)
     tmp2 = re.sub(r'\[\[(File|Image)(.+?)\]\]', '', tmp1)
-    tmp3 = re.sub(r'\[\[(.*?)\|?([^\[\]]+)\]\]', '\\2', tmp2)
+    tmp3 = re.sub(r'\[\[(.*?)\|?([^\|\[\]]+)\]\]', '\\2', tmp2)
     tmp4 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp3)
     tmp5 = re.sub(r'\'{2,}', '', tmp4)
-    tmp6 = re.sub(r'\[\S+ (\S+)\]', '\\1', tmp5)
+    tmp6 = re.sub(r'\[\S+ (.+)\]', '\\1', tmp5)
 
     return tmp6
 
