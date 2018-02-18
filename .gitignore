@@ -4,3 +4,6 @@ secrets/*
 !secrets/.keep
 
 *.*.swp
+
+data/*
+!data/raw/
