@@ -12,10 +12,10 @@ import collections
 import json
 import os
 import re
-
 import xml.etree.cElementTree as ElementTree
 
 NAMESPACE = '{http://www.mediawiki.org/xml/export-0.10/}'
+# TODO: Add documentation.
 def namespaced_tag(tag):
     return NAMESPACE + tag
 
@@ -44,14 +44,19 @@ def transformed_page_text(text):
     return tmp6
 
 def create_page_from_page_node(node):
-    page = {}
-    page['title'] = page_node.find(namespaced_tag('title')).text
+    title = page_node.find(namespaced_tag('title')).text
     raw_text = page_node.find(namespaced_tag('revision')).find(namespaced_tag('text')).text
     if raw_text is None:
         raw_text = ''
-    page['text'] = raw_text
+    text = raw_text
 
-    return page
+    return create_page(title, text)
+
+def create_page(title, text):
+    return {
+        'title': title,
+        'text': text
+    }
 
 
 parser = argparse.ArgumentParser()
@@ -75,12 +80,8 @@ for page_node in root.iterfind(namespaced_tag('page')):
 
         aggs[title].append(transformed_page_text(page['text']))
 
-for title, articles in aggs.items():
-    page = {
-        'title': title,
-        'text': '\n'.join(articles)
-    }
-
+for title, contents in aggs.items():
+    page = create_page(title, '\n'.join(contents))
     print(title)
 
     fn = title + '.json'
