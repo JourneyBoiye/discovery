@@ -14,6 +14,8 @@ import csv
 import re
 import sys
 
+import lib.normalize
+
 def subset_census_row(row_items):
     """
     Select a subset of the items in a row and return this subset as a list.
@@ -40,29 +42,13 @@ def transform_city_name(city):
     Returns:
     The transformed city name.
     """
-    city_maps = {
-        'new york': 'new york city',
-        'mexico, ciudad de': 'mexico city',
-        'delhi municipal corporation': 'delhi',
-        'bogotá': 'bogota',
-        'greater hyderabad municipal corporation': 'hyderabad',
-        'hong kong sar': 'hong kong',
-        'moskva': 'moscow'
-    }
 
     # Fix capitalization, remove parentheticals and remove duplicate whitespace.
     transform = re.sub(r'\(.+\)', '', city)
     transform = re.sub(r'\s\s+', '', transform)
     transform = transform.strip()
 
-    try:
-        transform = city_maps[transform.lower()]
-    except KeyError:
-        pass
-
-    transform = transform.title()
-
-    return transform
+    return lib.normalize.city(transform)
 
 
 def transform_country_name(country):
@@ -75,27 +61,11 @@ def transform_country_name(country):
     Returns:
     The transformed country name.
     """
-    country_maps = {
-        'united kingdom of great britain and northern ireland': 'united kingdom',
-        'russian federation': 'russia',
-        'china, hong kong sar': 'hong kong',
-        'united republic of tanzania': 'tanzania',
-        'czechia': 'czech republic'
-    }
-
-
     transform = re.sub(r'\(.+\)', '', country)
     transform = re.sub(r'\s\s+', '', transform)
     transform = transform.strip()
 
-    try:
-        transform = country_maps[transform.lower()]
-    except KeyError:
-        pass
-
-    transform = transform.title()
-
-    return transform
+    return lib.normalize.country(transform)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('un_data_fn', help='The raw UN census data filename.')
