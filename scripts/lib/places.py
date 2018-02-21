@@ -1,4 +1,5 @@
 import math
+import re
 
 import editdistance
 import requests
@@ -147,15 +148,17 @@ class GooglePlacesClient(CountryLookupClient):
 
             for pred in resp['predictions']:
                 pred_city = pred['terms'][0]['value']
+                pred_city_terms = re.split(r'[\-\s]', pred_city)
                 pred_country = pred['terms'][-1]['value']
 
-                ed = editdistance.eval(city, pred_city)
-                if ed < min_ed:
-                    min_ed_country = pred_country
-                    min_ed = ed
+                for pred_city_term in pred_city_terms:
+                    ed = editdistance.eval(city, pred_city_term)
+                    if ed < min_ed:
+                        min_ed_country = pred_country
+                        min_ed = ed
 
-                if ed == 0:
-                    break
+                    if ed == 0:
+                        break
 
             return min_ed_country
         
