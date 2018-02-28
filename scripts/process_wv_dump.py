@@ -23,8 +23,10 @@ import lib.normalize
 import lib.page
 import lib.places
 
-NAMESPACE = '{http://www.mediawiki.org/xml/export-0.10/}'
+import lib.geo.country
 
+
+NAMESPACE = '{http://www.mediawiki.org/xml/export-0.10/}'
 
 def save_page(page):
     """
@@ -52,30 +54,25 @@ def save_page(page):
            'disambiguation banner' not in text[:200]
 
 
-def augment_page(pc, rc, page):
-    mod_city = re.sub(r'\s*\(.+?\)\s*', '', page.title)
-    city = lib.normalize.city(mod_city)
-    unnorm_country = pc.country(city)
+def augment_page(rc, cities_to_country, page):
+    country = cities_to_country[page.title]
+    page.set_extra('country', country.value.title())
 
-    country = lib.normalize.country(unnorm_country)
-    page.set_extra('country', country)
+    try:
+        r = rpi_by_country[country]
+        page.set_extra('rpi', r)
+    except KeyError:
+        page.set_extra('rpi', -1)
 
-    if country:
-        try:
-            # TODO: How to handle this elegantly.
-            if country == 'South Korea':
-                country = 'Korea (Republic of)'
-
-            region = rc.region(country)
-            page.set_extra('region', region)
-        except requests.exceptions.HTTPError:
-            page.set_extra('region', '')
-    else:
+    try:
+        region = rc.region(country)
+        page.set_extra('region', region)
+    except requests.exceptions.HTTPError:
         page.set_extra('region', '')
 
 
-def augment_and_write(pc, rc, output_dir, page):
-    augment_page(pc, rc, page)
+def augment_and_write(rc, cities_to_country, output_dir, page):
+    augment_page(rc, cities_to_country, page)
 
     out_fn = os.path.join(output_dir, page.title + '.json')
     with open(out_fn, 'w') as f:
@@ -89,23 +86,37 @@ parser.add_argument('dump', help='The file name of the WikiVoyage dump.')
 parser.add_argument('output_dir', help='The output directory of the pages')
 parser.add_argument('cities_by_pop',
                     help='A csv file of cities sorted by population')
+parser.add_argument('rpi_by_country', help='A csv of countries and their rpi')
 parser.add_argument('num_cities', help='The number of cities to consider',
                     type=int)
-parser.add_argument('places_config', help='Configuration for the places client.')
 parser.add_argument('--threads', type=int, default=5,
                     help='The number of threads to use.')
 args = parser.parse_args()
 
-with open(args.places_config, 'r') as config:
-    places_key = json.load(config)['key']
 
 # Go through the list of cities in order of population and create a list.
 cities = []
+cities_to_country = {}
 with open(args.cities_by_pop, 'r') as f:
     cities_reader = csv.reader(f, delimiter=',')
 
     for i, row in enumerate(cities_reader):
-        cities.append(row[1])
+        country = row[0]
+        city = row[1]
+        cities.append(city)
+        if city not in cities_to_country:
+            cities_to_country[city] = lib.geo.country.create(country.lower())
+
+rpi_by_country = {}
+with open(args.rpi_by_country, 'r') as f:
+    rpi_reader = csv.reader(f, delimiter=',')
+
+    for row in rpi_reader:
+        if row:
+            raw_country = row[0]
+            c = lib.geo.country.create(raw_country)
+            rpi_by_country[c] = float(row[1])
+
 
 factory = lib.page.WVPageXMLFactory(NAMESPACE)
 dump = ElementTree.parse(args.dump)
@@ -137,9 +148,8 @@ for city in cities:
             break
 
 pages_to_augment = [lib.page.WVPage(k, v) for k, v in selected_aggs.items()]
-pc = lib.places.GooglePlacesClient(places_key)
 rc = lib.places.RestCountriesClient()
 
 with multiprocessing.Pool(args.threads) as p:
-    wrapped = functools.partial(augment_and_write, pc, rc, args.output_dir)
+    wrapped = functools.partial(augment_and_write, rc, cities_to_country, args.output_dir)
     p.map(wrapped, pages_to_augment)

@@ -1,8 +1,6 @@
-import math
-import re
-
-import editdistance
 import requests
+
+from lib.geo.country import Country
 
 class LookupClient:
     """
@@ -43,7 +41,7 @@ class LookupClient:
         Returns
         The picked info from the received response.
         """
-        return self._pick(self._query(args), *args)
+        return self._pick(self._query(self._mapper(*args)), *args)
 
     def _query(self, args):
         """
@@ -74,28 +72,23 @@ class LookupClient:
         *args: The arguments that were used in a query to this client.
 
         Returns
-        The desired bit of information out  of the response.
+        The desired bit of information out of the response.
         """
         pass
 
-class CountryLookupClient(LookupClient):
-    """
-    Lookup a country based on a city. This class must be extended to define the
-    service that will be used to lookup the country and how to parse the
-    response.
-    """
-
-    def country(self, city):
+    def _mapper(self, *args):
         """
-        Lookup the country for a given city.
+        Convert the input to the lookup to a string format of args that can be
+        used in the query template.
 
         Args
-        city: The city whose country we are looking for.
+        args: The arguments to use in the query.
 
         Returns
-        The country this city is in.
+        The mapped arguments.
         """
-        return self._lookup(city)
+        return args
+
 
 class RegionLookupClient(LookupClient):
     """
@@ -103,6 +96,9 @@ class RegionLookupClient(LookupClient):
     to define the service that will be used to lookup the region and how to
     parse the result.
     """
+
+    def __init__(self):
+        super().__init__()
 
     def region(self, country):
         """
@@ -116,14 +112,34 @@ class RegionLookupClient(LookupClient):
         """
         return self._lookup(country)
 
+    # TODO
+    def _mapper(self, *args):
+        """
+        Convert the input to the lookup to a string format of args that can be
+        used in the query template. In this case, convert the Country enum to
+        its value.
+
+        Args
+        args: The arguments to use in the query. In this case, the country.
+
+        Returns
+        The country name as a string.
+        """
+        return [args[0].value]
+
 
 class RestCountriesClient(RegionLookupClient):
     """
     A client that lookups up regions using the RestCountries API.
     """
+    _COUNTRIES_MAP = {
+        Country.SOUTH_KOREA: 'korea (republic of)',
+        Country.NORTH_KOREA: 'korea (democratic people\'s republic of)',
+        Country.REPUBLIC_OF_THE_CONGO: 'congo',
+    }
 
     def __init__(self):
-        super(RegionLookupClient, self).__init__()
+        super().__init__()
 
     def _template(self):
         # TODO:
@@ -132,34 +148,20 @@ class RestCountriesClient(RegionLookupClient):
     def _pick(self, resp, country):
         return resp[0]['region']
 
+    def _mapper(self, *args):
+        """
+        Convert the input to the lookup to a string format of args that can be
+        used in the query template. In this case, convert the Country enum to
+        its value. This mapper is specialize to handle idiosyncrasies in the
+        API's country name.
 
-class GooglePlacesClient(CountryLookupClient):
-    """
-    A client that looks up countries using the Google Places API.
-    """
-    def _template(self):
-        # TODO:
-        return 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input={1}&types=(cities)&key={0}'
+        Args
+        args: The arguments to use in the query. In this case, the country.
 
-    def _pick(self, resp, city):
-        if resp['status'] == 'OK':
-            min_ed_country = None
-            min_ed = float('inf')
-
-            for pred in resp['predictions']:
-                pred_city = pred['terms'][0]['value']
-                pred_city_terms = re.split(r'[\-\s]', pred_city)
-                pred_country = pred['terms'][-1]['value']
-
-                for pred_city_term in pred_city_terms:
-                    ed = editdistance.eval(city, pred_city_term)
-                    if ed < min_ed:
-                        min_ed_country = pred_country
-                        min_ed = ed
-
-                    if ed == 0:
-                        break
-
-            return min_ed_country
-        
-        return ''
+        Returns
+        The country name as a string.
+        """
+        try:
+            return [RestCountriesClient._COUNTRIES_MAP[args[0]]]
+        except KeyError:
+            return super()._mapper(*args)
