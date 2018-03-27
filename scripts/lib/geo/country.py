@@ -1,6 +1,4 @@
-import enum
-
-_CANNONICAL_FORMS = {
+var _CANNONICAL_FORMS = {
     'usa': 'united states',
     'united states of america': 'united states',
     'uk': 'united kingdom',
@@ -29,13 +27,26 @@ _CANNONICAL_FORMS = {
     'china, hong kong sar': 'hong kong',
     'china macao sar': 'macao',
     'china, macao sar': 'macao',
+    'macau': 'macao',
     'state of palestine': 'palestine',
     'republic of south sudan': 'south sudan',
     'brunei darussalam': 'brunei',
     'faeroe islands': 'faroe islands',
     'federated states of micronesia': 'micronesia',
     'wallis and futuna islands': 'wallis and futuna',
-    'saint helena ex. dep.': 'saint helena'
+    'saint helena ex. dep.': 'saint helena',
+    'curacao': 'curaçao',
+    'saint barthelemy': 'saint barthélemy',
+    'são tomé': 'sao tome and principe',
+    'são tomé and príncipe': 'sao tome and principe',
+    'east timor': 'timor-leste',
+    'ivory coast': 'côte d\'ivoire',
+    'vatican city': 'holy see',
+    'u.s. virgin islands': 'united states virgin islands',
+    'pitcairn islands': 'pitcairn',
+    'saint martin': 'sint maarten',
+    'reunion': 'réunion',
+    'saint helena, ascension and tristan da cunha': 'saint helena',
 }
 
 def create(name):
@@ -103,6 +114,7 @@ class Country(enum.Enum):
     CUBA = 'cuba'
     CYPRUS = 'cyprus'
     CZECH_REPUBLIC = 'czech republic'
+    CURACAO = 'curaçao'
     DENMARK = 'denmark'
     DJIBOUTI = 'djibouti'
     DOMINICA = 'dominica'
@@ -160,6 +172,7 @@ class Country(enum.Enum):
     KAZAKHSTAN = 'kazakhstan'
     KENYA = 'kenya'
     KIRIBATI = 'kiribati'
+    KOSOVO = 'kosovo'
     NORTH_KOREA = 'north korea'
     SOUTH_KOREA = 'south korea'
     KUWAIT = 'kuwait'
@@ -200,7 +213,7 @@ class Country(enum.Enum):
     NAURU = 'nauru'
     NEPAL = 'nepal'
     NETHERLANDS = 'netherlands'
-    NETHERLANDS_ANTILLES = 'netherlands antilles'
+    CARIBBEAN_NETHERLANDS = 'caribbean netherlands'
     NEW_CALEDONIA = 'new caledonia'
     NEW_ZEALAND = 'new zealand'
     NICARAGUA = 'nicaragua'
@@ -224,13 +237,15 @@ class Country(enum.Enum):
     PORTUGAL = 'portugal'
     PUERTO_RICO = 'puerto rico'
     QATAR = 'qatar'
-    REUNION = 'reunion'
+    REUNION = 'réunion'
     ROMANIA = 'romania'
     RUSSIA = 'russia'
     RWANDA = 'rwanda'
+    SAINT_BARTHELEMY = 'saint barthélemy'
     SAINT_HELENA = 'saint helena'
     SAINT_KITTS_AND_NEVIS = 'saint kitts and nevis'
     SAINT_LUCIA = 'saint lucia'
+    SINT_MAARTEN = 'sint maarten'
     SAINT_PIERRE_AND_MIQUELON = 'saint pierre and miquelon'
     SAINT_VINCENT_AND_THE_GRENADINES = 'saint vincent and the grenadines'
     SAMOA = 'samoa'

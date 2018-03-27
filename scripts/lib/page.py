@@ -38,12 +38,12 @@ class WVPage:
         return base
 
     def remove_wikicode(self):
-        tmp1 = re.sub(r'\(?\{\{.+?\}\}\)?', '', self.text)
-        tmp2 = re.sub(r'\[\[(File|Image)(.+?)\]\]', '', tmp1)
-        tmp3 = re.sub(r'\[\[(.*?)\|?([^\|\[\]]+)\]\]', '\\2', tmp2)
-        tmp4 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp3)
-        tmp5 = re.sub(r'\'{2,}', '', tmp4)
-        tmp6 = re.sub(r'\[\S+ (.+)\]', '\\1', tmp5)
+        tmp1 = re.sub(r'\(?\{\{.+?\}\}\)?', '', self.text, re.DOTALL)
+        tmp2 = re.sub(r'\[\[(File|Image)(.+?)\]\]', '', tmp1, re.DOTALL)
+        tmp3 = re.sub(r'\[\[(.*?)\|?([^\|\[\]]+)\]\]', '\\2', tmp2, re.DOTALL)
+        tmp4 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp3, re.DOTALL)
+        tmp5 = re.sub(r'\'{2,}', '', tmp4, re.DOTALL)
+        tmp6 = re.sub(r'\[\S+ (.+)\]', '\\1', tmp5, re.DOTALL)
 
         self.text = tmp6
 

@@ -54,8 +54,15 @@ def save_page(page):
            'disambiguation banner' not in text[:200]
 
 
-def augment_page(rc, cities_to_country, page):
+def augment_page(rc, cities_to_country, country_to_iata, page):
     country = cities_to_country[page.title]
+
+    try:
+        code = country_to_iata[country]
+        page.set_extra('iata', code)
+    except KeyError:
+        page.set_extra('iata', '')
+
     page.set_extra('country', country.value.title())
 
     try:
@@ -71,8 +78,8 @@ def augment_page(rc, cities_to_country, page):
         page.set_extra('region', '')
 
 
-def augment_and_write(rc, cities_to_country, output_dir, page):
-    augment_page(rc, cities_to_country, page)
+def augment_and_write(rc, cities_to_country, country_to_iata, output_dir, page):
+    augment_page(rc, cities_to_country, country_to_iata, page)
 
     out_fn = os.path.join(output_dir, page.title + '.json')
     with open(out_fn, 'w') as f:
@@ -87,6 +94,7 @@ parser.add_argument('output_dir', help='The output directory of the pages')
 parser.add_argument('cities_by_pop',
                     help='A csv file of cities sorted by population')
 parser.add_argument('rpi_by_country', help='A csv of countries and their rpi')
+parser.add_argument('iata_country_codes', help='A csv of IATA countries codes')
 parser.add_argument('num_cities', help='The number of cities to consider',
                     type=int)
 parser.add_argument('--threads', type=int, default=5,
@@ -116,6 +124,22 @@ with open(args.rpi_by_country, 'r') as f:
             raw_country = row[0]
             c = lib.geo.country.create(raw_country)
             rpi_by_country[c] = float(row[1])
+
+country_to_iata = {}
+with open(args.iata_country_codes, 'r') as f:
+    iata_reader = csv.reader(f, delimiter=',')
+
+    for row in iata_reader:
+        if row:
+            raw_country = row[0].lower()
+
+            try:
+                c = lib.geo.country.create(raw_country)
+                code = row[1]
+
+                country_to_iata[c] = code
+            except ValueError:
+                pass
 
 
 factory = lib.page.WVPageXMLFactory(NAMESPACE)
@@ -151,5 +175,5 @@ pages_to_augment = [lib.page.WVPage(k, v) for k, v in selected_aggs.items()]
 rc = lib.places.RestCountriesClient()
 
 with multiprocessing.Pool(args.threads) as p:
-    wrapped = functools.partial(augment_and_write, rc, cities_to_country, args.output_dir)
+    wrapped = functools.partial(augment_and_write, rc, cities_to_country, country_to_iata, args.output_dir)
     p.map(wrapped, pages_to_augment)

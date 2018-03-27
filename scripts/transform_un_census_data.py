@@ -51,22 +51,6 @@ def transform_city_name(city):
     return lib.normalize.city(transform)
 
 
-def transform_country_name(country):
-    """
-    Transform a country name into a more friendly format.
-
-    Args:
-    country: The country format.
-
-    Returns:
-    The transformed country name.
-    """
-    transform = re.sub(r'\(.+\)', '', country)
-    transform = re.sub(r'\s\s+', '', transform)
-    transform = transform.strip()
-
-    return lib.normalize.country(transform)
-
 parser = argparse.ArgumentParser()
 parser.add_argument('un_data_fn', help='The raw UN census data filename.')
 args = parser.parse_args()
@@ -82,7 +66,7 @@ with open(args.un_data_fn, 'r') as un_data:
 
     for row in un_data_reader:
         subset = subset_census_row(row)
-        transformed = (transform_country_name(subset[0]),
+        transformed = (subset[0],
                        transform_city_name(subset[1]), subset[2])
         k = transformed[:2]
         # This removes the half people that exist in the world.
