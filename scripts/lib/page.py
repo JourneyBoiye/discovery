@@ -46,9 +46,9 @@ class WVPage:
             _create_sub_applier(WVPage.TEMPLATES, '', flags),
             _create_sub_applier(WVPage.NESTED_BRACKETS, '', flags),
             _create_sub_applier(WVPage.FILE_BRACKETS, '', flags),
-            _create_sub_applier(WVPage.WIKI_PAGE_BRACKETS, '\\2', flags)
-            _create_sub_applier(WVPage.HEADERS, '\\1', flags)
-            _create_sub_applier(WVPage.EXTERNAL_LINKS_WITH_TEXT, '\\1', flags)
+            _create_sub_applier(WVPage.WIKI_PAGE_BRACKETS, '\\2', flags),
+            _create_sub_applier(WVPage.HEADERS, '\\1', flags),
+            _create_sub_applier(WVPage.EXTERNAL_LINKS_WITH_TEXT, '\\1', flags),
             _create_sub_applier(WVPage.ITALIC_INDENTS, '', flags),
             _create_sub_applier(WVPage.MULTI_SEQUENCE_QUOTES, '', flags)
         ]

@@ -1,4 +1,4 @@
-var _CANNONICAL_FORMS = {
+_CANNONICAL_FORMS = {
     'usa': 'united states',
     'united states of america': 'united states',
     'uk': 'united kingdom',
@@ -305,3 +305,4 @@ class Country(enum.Enum):
     YEMEN = 'yemen'
     ZAMBIA = 'zambia'
     ZIMBABWE = 'zimbabwe'
+}
