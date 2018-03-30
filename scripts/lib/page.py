@@ -1,4 +1,8 @@
+import functools
 import re
+
+def _create_sub_applier(regex, sub, flags):
+    return functools.partial(re.sub, pattern=regex, repl=sub, flags=flags)
 
 class WVPageFactoryBase:
     def create(self):
@@ -23,10 +27,31 @@ class WVPageXMLFactory(WVPageFactoryBase):
 
 
 class WVPage:
+    TEMPLATES = r'\(?\{\{.+?\}\}\)?'
+    FILE_BRACKETS = r'\[\[(File|Image)(.+?)\]\]'
+    NESTED_BRACKETS = r'\[\[[^\[\]]+\[\[.+?\]\].+?\]\]'
+    WIKI_PAGE_BRACKETS = r'\[\[(.*?)\|?([^\|\[\]]+)\]\]'
+    HEADERS = r'={2,}(.+?)={2,}'
+    ITALIC_INDENTS = r'^:\'\'.+?\'\''
+    MULTI_SEQUENCE_QUOTES = r'\'{2,}'
+    EXTERNAL_LINKS_WITH_TEXT = r'\[\S+ (.+)\]'
+
     def __init__(self, title, text):
         self.title = title
         self.text = text
         self.extras = {}
+
+        flags = re.DOTALL | re.M
+        self._clean_ups = [
+            _create_sub_applier(WVPage.TEMPLATES, '', flags),
+            _create_sub_applier(WVPage.NESTED_BRACKETS, '', flags),
+            _create_sub_applier(WVPage.FILE_BRACKETS, '', flags),
+            _create_sub_applier(WVPage.WIKI_PAGE_BRACKETS, '\\2', flags)
+            _create_sub_applier(WVPage.HEADERS, '\\1', flags)
+            _create_sub_applier(WVPage.EXTERNAL_LINKS_WITH_TEXT, '\\1', flags)
+            _create_sub_applier(WVPage.ITALIC_INDENTS, '', flags),
+            _create_sub_applier(WVPage.MULTI_SEQUENCE_QUOTES, '', flags)
+        ]
 
     def json(self):
         base = {
@@ -38,14 +63,11 @@ class WVPage:
         return base
 
     def remove_wikicode(self):
-        tmp1 = re.sub(r'\(?\{\{.+?\}\}\)?', '', self.text, re.DOTALL)
-        tmp2 = re.sub(r'\[\[(File|Image)(.+?)\]\]', '', tmp1, re.DOTALL)
-        tmp3 = re.sub(r'\[\[(.*?)\|?([^\|\[\]]+)\]\]', '\\2', tmp2, re.DOTALL)
-        tmp4 = re.sub(r'={2,}(.+?)={2,}', '\\1', tmp3, re.DOTALL)
-        tmp5 = re.sub(r'\'{2,}', '', tmp4, re.DOTALL)
-        tmp6 = re.sub(r'\[\S+ (.+)\]', '\\1', tmp5, re.DOTALL)
+        cur = self.text
+        for clean_up in self._clean_ups:
+            cur = clean_up(cur)
 
-        self.text = tmp6
+        self.text = cur
 
     def get_extra(self, key):
         return self.extras.get(key, None)
