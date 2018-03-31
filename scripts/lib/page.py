@@ -2,7 +2,7 @@ import functools
 import re
 
 def _create_sub_applier(regex, sub, flags):
-    return functools.partial(re.sub, pattern=regex, repl=sub, flags=flags)
+    return functools.partial(re.sub, regex, sub, flags=flags)
 
 class WVPageFactoryBase:
     def create(self):
@@ -34,7 +34,7 @@ class WVPage:
     HEADERS = r'={2,}(.+?)={2,}'
     ITALIC_INDENTS = r'^:\'\'.+?\'\''
     MULTI_SEQUENCE_QUOTES = r'\'{2,}'
-    EXTERNAL_LINKS_WITH_TEXT = r'\[\S+ (.+)\]'
+    EXTERNAL_LINKS_WITH_TEXT = r'\[\S+ (.+?)\]'
 
     def __init__(self, title, text):
         self.title = title

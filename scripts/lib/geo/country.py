@@ -1,3 +1,5 @@
+import enum
+
 _CANNONICAL_FORMS = {
     'usa': 'united states',
     'united states of america': 'united states',
@@ -305,4 +307,3 @@ class Country(enum.Enum):
     YEMEN = 'yemen'
     ZAMBIA = 'zambia'
     ZIMBABWE = 'zimbabwe'
-}
