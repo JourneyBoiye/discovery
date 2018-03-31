@@ -22,8 +22,9 @@ def upload_article(discovery, env_id, coll_id, f):
 
 def upload_filename(discovery, env_id, coll_id, fn):
     print(fn)
-    with open(fn, 'r') as f:
-        upload_article(discovery, env_id, coll_id, f)
+    f = open(fn)
+    upload_article(discovery, env_id, coll_id, f)
+    f.close()
 
 def upload_filename_configured(discovery, env_id, coll_id):
     return functools.partial(upload_filename, discovery, env_id, coll_id)
