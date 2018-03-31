@@ -16,15 +16,14 @@ from retry import retry
 
 import logging
 
-@retry(exceptions=WatsonException, delay=1, backoff=1.2, max_delay=10)
 def upload_article(discovery, env_id, coll_id, f):
     discovery.add_document(env_id, coll_id, file_info=f)
 
+@retry(exceptions=WatsonException, delay=1, backoff=1.2, max_delay=10)
 def upload_filename(discovery, env_id, coll_id, fn):
     print(fn)
-    f = open(fn)
-    upload_article(discovery, env_id, coll_id, f)
-    f.close()
+    with open(fn) as f:
+        upload_article(discovery, env_id, coll_id, f)
 
 def upload_filename_configured(discovery, env_id, coll_id):
     return functools.partial(upload_filename, discovery, env_id, coll_id)
