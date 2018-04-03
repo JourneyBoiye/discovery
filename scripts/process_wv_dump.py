@@ -24,6 +24,7 @@ import lib.page
 import lib.places
 
 import lib.geo.country
+import lib.geo.region
 
 
 NAMESPACE = '{http://www.mediawiki.org/xml/export-0.10/}'
@@ -73,7 +74,7 @@ def augment_page(rc, cities_to_country, country_to_iata, page):
 
     try:
         region = rc.region(country)
-        page.set_extra('region', region)
+        page.set_extra('region', region.name.title())
     except requests.exceptions.HTTPError:
         page.set_extra('region', '')
 

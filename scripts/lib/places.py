@@ -1,6 +1,7 @@
 import requests
 
 from lib.geo.country import Country
+from lib.geo.region import Region
 
 class LookupClient:
     """
@@ -146,7 +147,21 @@ class RestCountriesClient(RegionLookupClient):
         return 'https://restcountries.eu/rest/v2/name/{1}'
 
     def _pick(self, resp, country):
-        return resp[0]['region']
+        """
+        Out of the response pick the result that has the exact same name as the
+        passed in country. If none exists, simply return the first result.
+
+        Args:
+        resp: The response from the API.
+        country: The country that was passed to the api to lookup the region.
+
+        Returns:
+        """
+        for result in resp:
+            if result['name'].upper() == country.name.upper():
+                return Region[result['region'].upper()]
+
+        return Region[resp[0]['region'].upper()]
 
     def _mapper(self, *args):
         """
