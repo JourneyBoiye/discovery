@@ -80,6 +80,7 @@ def augment_page(rc, cities_to_country, country_to_iata, page):
 
 
 def augment_and_write(rc, cities_to_country, country_to_iata, output_dir, page):
+    page.remove_wikicode()
     augment_page(rc, cities_to_country, country_to_iata, page)
 
     out_fn = os.path.join(output_dir, page.title + '.json')
@@ -152,8 +153,6 @@ for page_node in root.iterfind(NAMESPACE + 'page'):
     page = factory.create(page_node)
 
     if save_page(page):
-        page.remove_wikicode()
-
         splice = page.title.find('/')
         if splice < 0:
             title = page.title
@@ -176,5 +175,6 @@ pages_to_augment = [lib.page.WVPage(k, v) for k, v in selected_aggs.items()]
 rc = lib.places.RestCountriesClient()
 
 with multiprocessing.Pool(args.threads) as p:
-    wrapped = functools.partial(augment_and_write, rc, cities_to_country, country_to_iata, args.output_dir)
+    wrapped = functools.partial(augment_and_write, rc, cities_to_country,
+        country_to_iata, args.output_dir)
     p.map(wrapped, pages_to_augment)

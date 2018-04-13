@@ -36,12 +36,20 @@ class WVPage:
     MULTI_SEQUENCE_QUOTES = r'\'{2,}'
     EXTERNAL_LINKS_WITH_TEXT = r'\[\S+ (.+?)\]'
 
+    PAGE_BANNER_EXTRACTION = r'\{\{pagebanner\|([^\|]+?\.jpg)(\|.+)?\}\}'
+
     def __init__(self, title, text):
         self.title = title
         self.text = text
         self.extras = {}
 
         flags = re.DOTALL | re.M
+        banner_match = re.search(WVPage.PAGE_BANNER_EXTRACTION, self.text, flags)
+        if banner_match and banner_match.group(1):
+            self.pagebanner = banner_match.group(1)
+        else:
+            self.pagebanner = ''
+
         self._clean_ups = [
             _create_sub_applier(WVPage.TEMPLATES, '', flags),
             _create_sub_applier(WVPage.NESTED_BRACKETS, '', flags),
@@ -57,7 +65,9 @@ class WVPage:
         base = {
             'title': self.title,
             'text': self.text,
+            'pagebanner': self.pagebanner,
         }
+
         base.update(self.extras)
 
         return base
